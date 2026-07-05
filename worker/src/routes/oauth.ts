@@ -163,7 +163,7 @@ export async function handleOAuthRoutes(
         facebook_app_id: body.facebook_app_id || null,
         facebook_app_secret: body.facebook_app_secret || null,
         facebook_callback_url: body.facebook_app_secret
-          ? `${new URL(request.url).origin}/api/oauth/facebook/callback`
+          ? `${env.FRONTEND_URL || "http://localhost:3000"}/api/oauth/facebook/callback`
           : null,
       });
 

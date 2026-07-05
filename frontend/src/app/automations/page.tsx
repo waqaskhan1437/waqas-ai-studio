@@ -900,8 +900,24 @@ export default function AutomationsPage() {
               )}
               {Array.isArray(showLogs.job.artifacts) && showLogs.job.artifacts.length > 0 && (
                 <div className="p-3 rounded-lg bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.18)]">
-                  <p className="text-xs font-semibold text-emerald-200">Debug artifacts</p>
-                  <p className="text-xs text-[#a1a1aa] mt-1">{showLogs.job.artifacts.map((artifact) => artifact.name).join(", ")}</p>
+                  <p className="text-xs font-semibold text-emerald-200">Download Artifacts (available 3 days)</p>
+                  <div className="space-y-1.5 mt-1">
+                    {showLogs.job.artifacts.map((artifact, idx) => (
+                      <div key={idx} className="flex items-center justify-between text-xs">
+                        <span className="text-[#a1a1aa] truncate mr-2">{artifact.name}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {artifact.size_in_bytes > 0 && (
+                            <span className="text-[#71717a]">{(artifact.size_in_bytes / 1024 / 1024).toFixed(1)} MB</span>
+                          )}
+                          {artifact.archive_download_url && (
+                            <a href={artifact.archive_download_url} target="_blank" rel="noopener" className="text-emerald-300 hover:text-emerald-200 underline">
+                              Download ZIP
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               <div className="flex gap-3">

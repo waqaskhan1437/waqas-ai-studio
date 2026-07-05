@@ -10,6 +10,7 @@ const download = require('./steps/download');
 const processVideo = require('./steps/process');
 const caption = require('./steps/caption');
 const upload = require('./steps/upload');
+const uploadToLitterbox = require('./steps/upload-to-litterbox');
 const post = require('./steps/post');
 const webhook = require('./steps/webhook');
 const tracker = require('./steps/tracker');
@@ -399,6 +400,19 @@ function readPostResult() {
   }
 }
 
+async function tryUploadToLitterbox(filePath, label) {
+  try {
+    const url = await uploadToLitterbox(filePath);
+    if (url) {
+      console.log(`[LITTERBOX] ${label} public URL: ${url}`);
+      return url;
+    }
+  } catch (err) {
+    console.warn(`[LITTERBOX] ${label} failed: ${err.message}`);
+  }
+  return null;
+}
+
 function buildProcessedVideoRecord({ videoUrl, originalUrl, aspectRatio, segment = null, postResult = null, merged = false, segmentCount = null }) {
   const record = {
     video_url: videoUrl,
@@ -690,11 +704,17 @@ async function main() {
               await caption();
 
               let uploadUrl = null;
-              // LOCAL FEATURE (skip_upload disabled for now)
               uploadUrl = await withRetry(() => upload(processedSegmentFile), { maxRetries: 2, delayMs: 5000 });
               if (uploadUrl) {
+                const litterboxUrl = await tryUploadToLitterbox(processedSegmentFile, `Segment ${seg.index + 1}`);
+                if (litterboxUrl) uploadUrl = litterboxUrl;
+
                 writeConfig(segmentConfig);
-                await withRetry(() => post(uploadUrl), { maxRetries: 2, delayMs: 5000 });
+                try {
+                  await withRetry(() => post(uploadUrl), { maxRetries: 2, delayMs: 5000 });
+                } catch (postErr) {
+                  console.warn(`[SEGMENT ${seg.index + 1}] Post failed (non-fatal): ${postErr.message}`);
+                }
                 const postResult = readPostResult();
                 if (postResult && postResult.media_url) {
                   uploadUrl = postResult.media_url;
@@ -753,10 +773,17 @@ async function main() {
           }
 
           let mergedUrl = null;
-          // LOCAL FEATURE (skip_upload disabled for now)
           writeConfig(config);
           mergedUrl = await withRetry(() => upload(builtMergedFile), { maxRetries: 2, delayMs: 5000 });
-          await withRetry(() => post(mergedUrl), { maxRetries: 2, delayMs: 5000 });
+          if (mergedUrl) {
+            const litterboxUrl = await tryUploadToLitterbox(builtMergedFile, 'Merge');
+            if (litterboxUrl) mergedUrl = litterboxUrl;
+          }
+          try {
+            await withRetry(() => post(mergedUrl), { maxRetries: 2, delayMs: 5000 });
+          } catch (postErr) {
+            console.warn(`[MERGE] Post failed (non-fatal): ${postErr.message}`);
+          }
           const mergedPostResult = readPostResult();
           if (mergedPostResult) {
             lastPostResult = mergedPostResult;
@@ -790,11 +817,18 @@ async function main() {
         await caption();
         
         let uploadUrl = null;
-        // LOCAL FEATURE (skip_upload disabled for now)
         uploadUrl = await withRetry(() => upload(), { maxRetries: 2, delayMs: 5000 });
 
         if (uploadUrl) {
-          await withRetry(() => post(uploadUrl), { maxRetries: 2, delayMs: 5000 });
+          const processedFile = path.join(OUTPUT_DIR, 'processed-video.mp4');
+          const litterboxUrl = await tryUploadToLitterbox(processedFile, `Video ${i + 1}`);
+          if (litterboxUrl) uploadUrl = litterboxUrl;
+
+          try {
+            await withRetry(() => post(uploadUrl), { maxRetries: 2, delayMs: 5000 });
+          } catch (postErr) {
+            console.warn(`[VIDEO ${i + 1}] Post failed (non-fatal): ${postErr.message}`);
+          }
           const postResult = readPostResult();
           if (postResult) {
             lastPostResult = postResult;

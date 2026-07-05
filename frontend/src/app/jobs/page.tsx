@@ -281,9 +281,14 @@ export default function JobsPage() {
                           </button>
                         )}
                         {job.github_run_url && (
-                          <a href={job.github_run_url} target="_blank" rel="noopener" className="glass-button text-sm py-2 px-4">
-                            GitHub
-                          </a>
+                          <>
+                            <a href={job.github_run_url} target="_blank" rel="noopener" className="glass-button text-sm py-2 px-4">
+                              GitHub
+                            </a>
+                            <a href={`${job.github_run_url}/artifacts`} target="_blank" rel="noopener" className="glass-button text-sm py-2 px-4 text-emerald-300">
+                              Artifacts
+                            </a>
+                          </>
                         )}
                         <button
                           onClick={() => setDeleteJobId(job.id)}
