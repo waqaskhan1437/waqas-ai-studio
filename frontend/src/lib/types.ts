@@ -96,9 +96,27 @@ export interface AIProviderCatalog {
   error?: string;
 }
 
+export interface CloudflareVisualModel {
+  id: string;
+  label: string;
+  task: "image" | "video";
+  description?: string;
+  experimental?: boolean;
+}
+
+export interface CloudflareVisualCatalog {
+  provider: "cloudflare";
+  image_models: CloudflareVisualModel[];
+  video_models: CloudflareVisualModel[];
+  image_model_count: number;
+  video_model_count: number;
+  source?: string;
+}
+
 export interface AIModelCatalogResponse {
   default_provider: string | null;
   providers: AIProviderCatalog[];
+  cloudflare_visual?: CloudflareVisualCatalog;
 }
 
 export interface SocialAccount {

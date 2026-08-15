@@ -8,6 +8,7 @@ import {
   type SupportedAIProvider,
 } from "./ai";
 import { getScopedSettings } from "./user-settings";
+import { resolveCloudflareImageModel } from "./cloudflare-ai";
 
 type ImageMode = "source_url" | "html_banner";
 type ImageLayout = "portrait" | "landscape";
@@ -241,10 +242,13 @@ function pickSequentialItems(items: string[], cursor: number, requestedCount: nu
   };
 }
 
-function normalizeImageMode(value: unknown): ImageMode {
+function normalizeImageMode(value: unknown): ImageMode | "cloudflare_ai" {
   const raw = readString(value).toLowerCase();
   if (raw === "source_url" || raw === "source" || raw === "url") {
     return "source_url";
+  }
+  if (raw === "cloudflare_ai" || raw === "ai_generated" || raw === "workers_ai") {
+    return "cloudflare_ai";
   }
   return "html_banner";
 }
@@ -977,6 +981,7 @@ export async function prepareImageAutomationRunConfig(
   return {
     ...config,
     image_mode: imageMode,
+    cloudflare_image_model: resolveCloudflareImageModel(config.cloudflare_image_model),
     image_layout: layout,
     output_resolution: outputResolution,
     output_format: normalizeImageFormat(config.output_format),

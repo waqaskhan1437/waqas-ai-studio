@@ -1,4 +1,4 @@
-import type { AIModelCatalogResponse, AIModelOption, AIProviderCatalog } from "./types";
+import type { AIModelOption, AIModelCatalogResponse, AIProviderCatalog, CloudflareVisualCatalog, CloudflareVisualModel } from "./types";
 
 function stringFromUnknown(value: unknown): string {
   if (typeof value === "string") return value;
@@ -73,6 +73,36 @@ function normalizeProvider(provider: unknown): AIProviderCatalog | null {
   };
 }
 
+function normalizeCloudflareVisualCatalog(value: unknown): CloudflareVisualCatalog | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const record = value as Record<string, unknown>;
+  const normalizeVisualModels = (raw: unknown, task: "image" | "video"): CloudflareVisualModel[] => {
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object"))
+      .map((item) => ({
+        id: stringFromUnknown(item.id).trim(),
+        label: labelFromUnknown(item.label, stringFromUnknown(item.id)),
+        task,
+        description: typeof item.description === "string" ? item.description : undefined,
+        experimental: item.experimental === true,
+      }))
+      .filter((item) => item.id);
+  };
+
+  const image_models = normalizeVisualModels(record.image_models, "image");
+  const video_models = normalizeVisualModels(record.video_models, "video");
+  if (image_models.length === 0 && video_models.length === 0) return undefined;
+  return {
+    provider: "cloudflare",
+    image_models,
+    video_models,
+    image_model_count: image_models.length,
+    video_model_count: video_models.length,
+    source: typeof record.source === "string" ? record.source : undefined,
+  };
+}
+
 export function normalizeAiCatalog(catalog: unknown): AIModelCatalogResponse {
   const record = catalog && typeof catalog === "object" ? catalog as Record<string, unknown> : {};
   const rawProviders = Array.isArray(record.providers) ? record.providers : [];
@@ -84,6 +114,7 @@ export function normalizeAiCatalog(catalog: unknown): AIModelCatalogResponse {
   return {
     default_provider: defaultProvider,
     providers,
+    cloudflare_visual: normalizeCloudflareVisualCatalog(record.cloudflare_visual),
   };
 }
 

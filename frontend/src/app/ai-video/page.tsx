@@ -1,8 +1,9 @@
 "use client";
 
 import { ApiError, api } from "@/lib/api";
+import type { AIModelCatalogResponse, CloudflareVisualModel } from "@/lib/types";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Check,
@@ -70,6 +71,11 @@ const VISUAL_STYLES = [
   "Luxury product story",
   "Newsroom / current affairs",
   "Warm human storytelling",
+];
+
+const FALLBACK_VIDEO_MODELS: CloudflareVisualModel[] = [
+  { id: "bytedance/seedance-2.0", label: "Seedance 2.0", task: "video", description: "4–12 second scene clips" },
+  { id: "xai/grok-imagine-video", label: "Grok Imagine Video", task: "video", description: "Text/image-to-video generation" },
 ];
 
 const SAMPLE_URDU_MANIFEST: ScriptManifest = {
@@ -147,6 +153,8 @@ export default function AiVideoGeneratorPage() {
   const [aspectRatio, setAspectRatio] = useState("9:16");
   const [visualMode, setVisualMode] = useState<VisualMode>("economy_reuse");
   const [videoModel, setVideoModel] = useState("bytedance/seedance-2.0");
+  const [imageModel, setImageModel] = useState("@cf/black-forest-labs/flux-2-klein-9b");
+  const [visualCatalog, setVisualCatalog] = useState<AIModelCatalogResponse | null>(null);
   const [ttsModel, setTtsModel] = useState("eleven_v3");
   const [voiceId, setVoiceId] = useState("");
   const [script, setScript] = useState<ScriptManifest | null>(null);
@@ -168,6 +176,33 @@ export default function AiVideoGeneratorPage() {
   const activeManifest = script || (isUrdu && !topic ? SAMPLE_URDU_MANIFEST : null);
   const visibleCaptionWords = activeManifest ? countWords(activeManifest.caption_text) : 0;
   const visibleTtsWords = activeManifest ? countWords(activeManifest.tts_text) : 0;
+  const videoModels = visualCatalog?.cloudflare_visual?.video_models?.length
+    ? visualCatalog.cloudflare_visual.video_models
+    : FALLBACK_VIDEO_MODELS;
+  const imageModels = visualCatalog?.cloudflare_visual?.image_models || [];
+
+  useEffect(() => {
+    let cancelled = false;
+    void api.get<AIModelCatalogResponse>("/api/settings/ai/models", { timeout: 15000 })
+      .then((response) => {
+        if (!cancelled && response.success) setVisualCatalog(response.data || null);
+      })
+      .catch(() => {
+        if (!cancelled) setVisualCatalog(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (videoModels.length > 0 && !videoModels.some((model) => model.id === videoModel)) {
+      setVideoModel(videoModels[0].id);
+    }
+    if (imageModels.length > 0 && !imageModels.some((model) => model.id === imageModel)) {
+      setImageModel(imageModels[0].id);
+    }
+  }, [imageModel, imageModels, videoModel, videoModels]);
 
   function applySample(): void {
     setTopic("چھوٹی عادتیں زندگی کیسے بدلتی ہیں؟");
@@ -232,6 +267,7 @@ export default function AiVideoGeneratorPage() {
         aspect_ratio: aspectRatio,
         visual_mode: visualMode,
         video_model: videoModel,
+        image_model: imageModel,
         tts_model: ttsModel,
         voice_id: voiceId.trim() || null,
         script: script || null,
@@ -403,11 +439,17 @@ export default function AiVideoGeneratorPage() {
                 <input value={voiceId} onChange={(event) => setVoiceId(event.target.value)} className="glass-input" placeholder="ElevenLabs voice ID" />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium">Visual model</label>
+                <label className="mb-2 block text-sm font-medium">Cloudflare video model</label>
                 <select value={videoModel} onChange={(event) => setVideoModel(event.target.value)} className="glass-select">
-                  <option value="bytedance/seedance-2.0">Seedance 2.0 — text to video</option>
-                  <option value="xai/grok-imagine-video-1.5-preview">Grok Imagine Video — preview</option>
+                  {videoModels.map((model) => <option key={model.id} value={model.id}>{model.label} — {model.description || "video generation"}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">Cloudflare image model</label>
+                <select value={imageModel} onChange={(event) => setImageModel(event.target.value)} className="glass-select" disabled={imageModels.length === 0}>
+                  {imageModels.length > 0 ? imageModels.map((model) => <option key={model.id} value={model.id}>{model.label}{model.experimental ? " — experimental" : ""}</option>) : <option value="">Image catalog loading…</option>}
+                </select>
+                <p className="mt-2 text-[11px] leading-5 text-[#71717a]">Image models are available for image automations; video jobs use the selected video model.</p>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium">Visual mode</label>
@@ -500,7 +542,7 @@ export default function AiVideoGeneratorPage() {
                 {submitting ? "Queueing…" : "Generate video"}
               </button>
             </div>
-            <div className="mt-4 flex items-start gap-2 text-[11px] leading-5 text-[#71717a]"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" /> Voice-over aur captions ek hi approved segment manifest se banenge, is liye Urdu caption/TTS mismatch nahi hona chahiye.</div>
+            <div className="mt-4 flex flex-wrap items-start gap-2 text-[11px] leading-5 text-[#71717a]"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-300" /> Voice-over aur captions ek hi approved segment manifest se banenge, is liye Urdu caption/TTS mismatch nahi hona chahiye. <span className="text-indigo-200">Catalog: {imageModels.length} image + {videoModels.length} video models</span></div>
           </section>
         </div>
       </div>

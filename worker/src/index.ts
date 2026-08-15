@@ -33,6 +33,7 @@ import { handleWebhookRoutes } from "./routes/webhooks";
 import { handleYoutubeExtractRoutes } from "./routes/youtube-extract";
 import { handleOAuthRoutes } from "./routes/oauth";
 import { handleVideoGenerationRoutes, handleVideoGenerationSceneRoute } from "./routes/video-generation";
+import { handleImageGenerationSceneRoute } from "./routes/image-generation";
 import { formatDatabaseDate, markAutomationRunCompleted, processDueAutomations, processPendingUploads, syncStaleRunningJobs } from "./services/automation-scheduler";
 import { getAdminEmail, getAdminPassword, getAuthContext, issueAdminAccessToken, requireAuth, logApiRequest, findUserByAccessToken } from "./services/auth";
 import { verifyWorkflowRuntimeConfigToken } from "./services/github";
@@ -956,6 +957,10 @@ export default {
 
      if (path === "/api/video-generation/scene") {
        return handleVideoGenerationSceneRoute(request, env);
+     }
+
+     if (path === "/api/image-generation/scene") {
+       return handleImageGenerationSceneRoute(request, env);
      }
 
      if (path.startsWith("/api/video-generation")) {

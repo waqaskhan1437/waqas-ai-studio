@@ -253,6 +253,44 @@ async function sendWebhook(payload) {
   }
 }
 
+async function renderCloudflareImage(config) {
+  const resolution = normalizeResolution(config.output_resolution || config.image_render_spec?.resolution);
+  const [width, height] = resolution.split("x").map((value) => Number.parseInt(value, 10) || 1024);
+  const baseUrl = String(process.env.WORKER_WEBHOOK_URL || "").replace(/\/api\/webhook\/github\/?$/, "");
+  const jobId = Number(process.env.JOB_ID || 0);
+  const token = String(process.env.RUNTIME_CONFIG_TOKEN || "");
+  if (!baseUrl || !jobId || !token) throw new Error("Cloudflare AI image generation requires WORKER_WEBHOOK_URL, JOB_ID, and RUNTIME_CONFIG_TOKEN");
+
+  const prompt = readString(
+    config.cloudflare_image_prompt || config.ai_prompt || config.banner_prompt || config.banner_title || config.automation_name,
+    "A polished social media visual matching the automation brief"
+  );
+  const response = await fetch(`${baseUrl}/api/image-generation/scene`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "User-Agent": "WaqasAIStudioImageRunner/1.0" },
+    body: JSON.stringify({
+      job_id: jobId,
+      token,
+      prompt: prompt.slice(0, 4000),
+      image_model: config.cloudflare_image_model,
+      width,
+      height,
+    }),
+  });
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(`Cloudflare AI image generation failed (${response.status}): ${errorText.slice(0, 400)}`);
+  }
+
+  const contentType = response.headers.get("content-type") || "image/png";
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length < 1000) throw new Error(`Cloudflare AI image response is unexpectedly small (${bytes.length} bytes)`);
+  const outputExtension = contentType.includes("jpeg") ? "jpg" : contentType.includes("webp") ? "webp" : "png";
+  const outputFile = path.join(OUTPUT_DIR, `generated-cloudflare-ai.${outputExtension}`);
+  fs.writeFileSync(outputFile, bytes);
+  return { outputFile, aspectRatio: getAspectRatio(resolution), resolution };
+}
+
 async function renderImage(config) {
   const resolution = normalizeResolution(config.output_resolution || config.image_render_spec?.resolution);
   const [width, height] = resolution.split("x").map((value) => Number.parseInt(value, 10) || 1080);
@@ -314,6 +352,23 @@ async function main() {
       video_url: sourceImageUrl,
       output_data: result,
     });
+    return;
+  }
+
+  if (imageMode === "cloudflare_ai") {
+    const rendered = await renderCloudflareImage(config);
+    const mediaUrl = await uploadFile(rendered.outputFile);
+    const result = {
+      media_kind: "image",
+      media_url: mediaUrl,
+      media_urls: [mediaUrl],
+      aspect_ratio: rendered.aspectRatio,
+      resolution: rendered.resolution,
+      mode: "cloudflare_ai",
+      cloudflare_image_model: config.cloudflare_image_model,
+    };
+    fs.writeFileSync(RESULT_PATH, JSON.stringify(result, null, 2), "utf8");
+    await sendWebhook({ status: "success", video_url: mediaUrl, output_data: result });
     return;
   }
 

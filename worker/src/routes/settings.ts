@@ -15,6 +15,7 @@ import {
   testGeminiApiKey,
   type SupportedAIProvider,
 } from "../services/ai";
+import { getCloudflareVisualCatalog } from "../services/cloudflare-ai";
 import { generateImageBannerPreviewSpecs, normalizeBannerFormat } from "../services/image-automation";
 import { getScopedSettings, upsertScopedSettings } from "../services/user-settings";
 import { buildCookieUploadDiagnostics } from "../services/cookie-files";
@@ -677,6 +678,7 @@ export async function handleSettingsRoutes(
         data: {
           default_provider: null,
           providers: [],
+          cloudflare_visual: getCloudflareVisualCatalog(),
         },
       });
     }

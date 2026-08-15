@@ -1,5 +1,7 @@
 import type { AISettings, Env } from "../types";
 
+import { getCloudflareVisualCatalog, type CloudflareVisualCatalog } from "./cloudflare-ai";
+
 export type SupportedAIProvider =
   | "openai"
   | "gemini"
@@ -1191,6 +1193,7 @@ export function getConfiguredProviderIds(settings: AISettings): SupportedAIProvi
 export async function buildAiCatalog(settings: AISettings): Promise<{
   default_provider: SupportedAIProvider | null;
   providers: AIProviderCatalogItem[];
+  cloudflare_visual: CloudflareVisualCatalog;
 }>;
 export async function buildAiCatalog(
   settings: AISettings,
@@ -1198,6 +1201,7 @@ export async function buildAiCatalog(
 ): Promise<{
   default_provider: SupportedAIProvider | null;
   providers: AIProviderCatalogItem[];
+  cloudflare_visual: CloudflareVisualCatalog;
 }>;
 export async function buildAiCatalog(
   settings: AISettings,
@@ -1205,6 +1209,7 @@ export async function buildAiCatalog(
 ): Promise<{
   default_provider: SupportedAIProvider | null;
   providers: AIProviderCatalogItem[];
+  cloudflare_visual: CloudflareVisualCatalog;
 }> {
   const configuredProviders = getConfiguredProviderIds(settings);
   const providers = await Promise.all(
@@ -1236,6 +1241,7 @@ export async function buildAiCatalog(
   return {
     default_provider: defaultProvider,
     providers,
+    cloudflare_visual: getCloudflareVisualCatalog(),
   };
 }
 

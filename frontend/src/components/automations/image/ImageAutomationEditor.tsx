@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import type { Automation } from "../types";
-import type { AIModelCatalogResponse } from "@/lib/types";
+import type { AIModelCatalogResponse, CloudflareVisualModel } from "@/lib/types";
 import { getAvailableProviders, normalizeAiCatalog, resolveModelSelection, resolveProviderSelection } from "@/lib/ai";
 import ImageBasicTab from "./ImageBasicTab";
 import ImageSocialContentTab from "./ImageSocialContentTab";
@@ -156,6 +156,17 @@ export default function ImageAutomationEditor({ editData, onSaved, onClose }: Pr
     onChange("social_ai_model", model);
   }, [onChange]);
 
+  const cloudflareImageModels: CloudflareVisualModel[] = aiCatalog?.cloudflare_visual?.image_models || [];
+
+  useEffect(() => {
+    if (cloudflareImageModels.length === 0) return;
+    setData((prev) => {
+      const currentModel = typeof prev.cloudflare_image_model === "string" ? prev.cloudflare_image_model : "";
+      if (currentModel && cloudflareImageModels.some((model) => model.id === currentModel)) return prev;
+      return { ...prev, cloudflare_image_model: cloudflareImageModels[0].id };
+    });
+  }, [cloudflareImageModels]);
+
   const handleGenerateSocial = useCallback(async () => {
     const topic = String(data.ai_prompt || "").trim();
     const platform = String(data.social_platform || "instagram");
@@ -308,6 +319,31 @@ export default function ImageAutomationEditor({ editData, onSaved, onClose }: Pr
               onChange={(event) => setName(event.target.value)}
               placeholder="e.g., Branded Product Banner"
             />
+          </div>
+
+          <div className="mb-6 grid gap-4 rounded-2xl border border-indigo-400/20 bg-indigo-400/[0.05] p-4 md:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium mb-2">Image generation mode</label>
+              <select className="glass-select" value={String(data.image_mode || "html_banner")} onChange={(event) => onChange("image_mode", event.target.value)}>
+                <option value="html_banner">HTML banner renderer</option>
+                <option value="cloudflare_ai">Cloudflare AI image generation</option>
+                <option value="source_url">Use source image URL</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Cloudflare image model</label>
+              <select
+                className="glass-select"
+                value={String(data.cloudflare_image_model || cloudflareImageModels[0]?.id || "")}
+                onChange={(event) => onChange("cloudflare_image_model", event.target.value)}
+                disabled={cloudflareImageModels.length === 0}
+              >
+                {cloudflareImageModels.length > 0
+                  ? cloudflareImageModels.map((model) => <option key={model.id} value={model.id}>{model.label}{model.experimental ? " — experimental" : ""}</option>)
+                  : <option value="">Cloudflare image catalog loading…</option>}
+              </select>
+              <p className="mt-2 text-[11px] leading-5 text-[#a1a1aa]">The selected model is used when image generation mode is Cloudflare AI.</p>
+            </div>
           </div>
 
           {renderTabContent()}

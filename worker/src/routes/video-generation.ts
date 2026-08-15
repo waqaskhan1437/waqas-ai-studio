@@ -10,6 +10,7 @@ import {
 import { getScopedSettings } from "../services/user-settings";
 import { verifyWorkflowRuntimeConfigToken } from "../services/github";
 import { AutomationRunResult, triggerAutomationRun } from "../services/automation-scheduler";
+import { resolveCloudflareVideoModel } from "../services/cloudflare-ai";
 
 const MIN_DURATION_SECONDS = 60;
 const MAX_DURATION_SECONDS = 2 * 60 * 60;
@@ -256,8 +257,7 @@ function normalizeIncomingManifest(value: unknown, language: string, targetWords
 }
 
 function validateVideoModel(value: unknown): string {
-  const model = readString(value, DEFAULT_VIDEO_MODEL);
-  return model === "xai/grok-imagine-video-1.5-preview" ? model : DEFAULT_VIDEO_MODEL;
+  return resolveCloudflareVideoModel(readString(value, DEFAULT_VIDEO_MODEL));
 }
 
 function validateAspectRatio(value: unknown): string {
@@ -269,8 +269,11 @@ async function generateVideoScene(env: Env, body: Record<string, unknown>): Prom
   if (!env.AI) return jsonResponse({ success: false, error: "Cloudflare AI binding is not configured" }, 503);
   const prompt = readString(body.prompt);
   if (!prompt) return jsonResponse({ success: false, error: "prompt is required" }, 400);
-  const duration = clampInteger(body.duration_seconds, 4, 12, 10);
   const model = validateVideoModel(body.video_model);
+  const requestedDuration = clampInteger(body.duration_seconds, 1, 15, 10);
+  const duration = model === "bytedance/seedance-2.0"
+    ? Math.max(4, Math.min(12, requestedDuration))
+    : requestedDuration;
 
   try {
     const result = await env.AI.run(model, {
@@ -278,9 +281,6 @@ async function generateVideoScene(env: Env, body: Record<string, unknown>): Prom
       duration,
       aspect_ratio: validateAspectRatio(body.aspect_ratio),
       resolution: readString(body.resolution, "720p"),
-      fps: 24,
-      generate_audio: false,
-      watermark: false,
     });
     const record = asRecord(result);
     const nested = asRecord(record.result);
