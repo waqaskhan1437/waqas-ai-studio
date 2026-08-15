@@ -20,43 +20,97 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 async function runImageModel(env: Env, model: string, prompt: string, width: number, height: number): Promise<unknown> {
-  try {
-    return await env.AI!.run(model, { prompt, width, height });
-  } catch (firstError) {
+  const runMultipart = async (): Promise<unknown> => {
     const form = new FormData();
     form.append("prompt", prompt);
     form.append("width", String(width));
     form.append("height", String(height));
     const serialized = new Response(form);
+    return env.AI!.run(model, {
+      multipart: {
+        body: serialized.body,
+        contentType: serialized.headers.get("content-type") || "multipart/form-data",
+      },
+    });
+  };
+
+  const requiresMultipart = model === "@cf/black-forest-labs/flux-2-klein-9b"
+    || model === "@cf/black-forest-labs/flux-2-klein-4b"
+    || model === "@cf/black-forest-labs/flux-2-dev";
+  if (requiresMultipart) return runMultipart();
+
+  try {
+    return await env.AI!.run(model, { prompt, width, height });
+  } catch (firstError) {
     try {
-      return await env.AI!.run(model, {
-        multipart: {
-          body: serialized.body,
-          contentType: serialized.headers.get("content-type") || "multipart/form-data",
-        },
-      });
+      return await runMultipart();
     } catch {
       throw firstError;
     }
   }
 }
 
-function imageResponse(result: unknown): Response | null {
-  if (result instanceof Response) return result;
-  if (result instanceof ArrayBuffer) {
-    return new Response(result, { headers: { "Content-Type": "image/png", "Cache-Control": "no-store" } });
+async function imageStringResponse(value: string): Promise<Response | null> {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) {
+    const fetched = await fetch(trimmed);
+    return fetched.ok ? new Response(fetched.body, { status: fetched.status, headers: { "Content-Type": fetched.headers.get("content-type") || "image/png", "Cache-Control": "no-store" } }) : null;
   }
-  if (result instanceof Uint8Array) {
-    return new Response(result, { headers: { "Content-Type": "image/png", "Cache-Control": "no-store" } });
+  const payload = trimmed.replace(/^data:image\/[^;]+;base64,/i, "");
+  try {
+    const binary = atob(payload);
+    if (binary.length < 1000) return null;
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    const contentType = bytes[0] === 0xff && bytes[1] === 0xd8
+      ? "image/jpeg"
+      : bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47
+        ? "image/png"
+        : bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+          ? "image/webp"
+          : "image/png";
+    return new Response(bytes, { headers: { "Content-Type": contentType, "Cache-Control": "no-store" } });
+  } catch {
+    return null;
   }
-  if (result instanceof ReadableStream) {
-    return new Response(result, { headers: { "Content-Type": "image/png", "Cache-Control": "no-store" } });
+}
+
+async function imageResponse(result: unknown): Promise<Response | null> {
+  const imageHeaders = { "Content-Type": "image/png", "Cache-Control": "no-store" };
+  if (typeof result === "string") return imageStringResponse(result);
+  if (result instanceof Response) return new Response(result.body, { status: result.status, headers: imageHeaders });
+  if (result instanceof ArrayBuffer) return new Response(result, { headers: imageHeaders });
+  if (ArrayBuffer.isView(result)) return new Response(result as ArrayBufferView<ArrayBuffer>, { headers: imageHeaders });
+  if (result && typeof result === "object" && typeof (result as { byteLength?: unknown }).byteLength === "number") {
+    const byteLength = Number((result as { byteLength: number }).byteLength);
+    if (byteLength > 0) return new Response(result as BodyInit, { headers: imageHeaders });
   }
+  if (result instanceof Blob) return new Response(result, { headers: { ...imageHeaders, "Content-Type": result.type || "image/png" } });
+  if (result instanceof ReadableStream) return new Response(result, { headers: imageHeaders });
+
+  if (result && typeof result === "object") {
+    const structural = result as { body?: unknown; arrayBuffer?: () => Promise<ArrayBuffer> };
+    if (structural.body instanceof ReadableStream) return new Response(structural.body, { headers: imageHeaders });
+    if (typeof structural.arrayBuffer === "function") {
+      return new Response(await structural.arrayBuffer(), { headers: imageHeaders });
+    }
+    if (structural.body && typeof (structural.body as { getReader?: unknown }).getReader === "function") {
+      return new Response(structural.body as ReadableStream, { headers: imageHeaders });
+    }
+  }
+
   const record = asRecord(result);
   const nested = asRecord(record.result);
-  const image = nested.image || record.image;
-  if (image instanceof Uint8Array || image instanceof ArrayBuffer || image instanceof ReadableStream) {
-    return imageResponse(image);
+  const image = nested.image || record.image || nested.image_bytes || record.image_bytes || nested.output || record.output;
+  if (image !== undefined) return imageResponse(image);
+
+  const base64Image = nested.image_base64 || record.image_base64;
+  if (typeof base64Image === "string" && base64Image) {
+    const binary = atob(base64Image.replace(/^data:image\/[^;]+;base64,/, ""));
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    return new Response(bytes, { headers: imageHeaders });
   }
   return null;
 }
@@ -88,7 +142,7 @@ export async function handleImageGenerationSceneRoute(request: Request, env: Env
 
   try {
     const result = await runImageModel(env, model, prompt.slice(0, 4000), width, height);
-    const response = imageResponse(result);
+    const response = await imageResponse(result);
     if (!response) return jsonResponse({ success: false, error: "Image model did not return image bytes" }, 502);
     return response;
   } catch (error) {
