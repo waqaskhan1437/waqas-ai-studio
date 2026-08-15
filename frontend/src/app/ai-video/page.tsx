@@ -399,7 +399,7 @@ export default function AiVideoGeneratorPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium">Voice ID <span className="font-normal text-[#71717a]">(optional)</span></label>
+                <label className="mb-2 block text-sm font-medium">Voice ID <span className="font-normal text-[#71717a]">(required for video)</span></label>
                 <input value={voiceId} onChange={(event) => setVoiceId(event.target.value)} className="glass-input" placeholder="ElevenLabs voice ID" />
               </div>
               <div>
