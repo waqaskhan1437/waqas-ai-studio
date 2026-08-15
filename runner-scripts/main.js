@@ -14,6 +14,7 @@ const uploadToLitterbox = require('./steps/upload-to-litterbox');
 const post = require('./steps/post');
 const webhook = require('./steps/webhook');
 const tracker = require('./steps/tracker');
+const { generateVideo } = require('./video-generation');
 
 const FAILURE_REPORT_PATH = path.join(OUTPUT_DIR, 'failure-report.json');
 const ERROR_LOG_PATH = path.join(OUTPUT_DIR, 'error.log');
@@ -572,10 +573,34 @@ async function runWithConcurrencyLimit(tasks, limit) {
   return Promise.all(results);
 }
 
+async function runGeneratedVideoJob(config) {
+  console.log('[MAIN] AI Video Generator workflow detected');
+  const generated = await generateVideo();
+  const uploadUrl = await withRetry(() => upload(generated.outputFile), { maxRetries: 2, delayMs: 5000 });
+  const processedVideo = {
+    media_kind: 'video',
+    media_url: uploadUrl,
+    video_url: uploadUrl,
+    original_url: null,
+    aspect_ratio: config.aspect_ratio || '9:16',
+    duration: Number(config.duration_seconds || 60),
+    workflow: 'video_generation',
+    scene_count: generated.result.scene_count,
+    language: config.language || 'en',
+  };
+  await webhook.final(1, 1, true, uploadUrl, [processedVideo], generated.result);
+  console.log(`[MAIN] AI generated video uploaded: ${uploadUrl}`);
+  return uploadUrl;
+}
+
 async function main() {
   console.log('[MAIN] Starting...');
   const config = loadConfig();
   materializeManagedCookieFiles(config);
+  if (config.workflow === 'video_generation') {
+    await runGeneratedVideoJob(config);
+    globalThis.process.exit(0);
+  }
   writeConfig(config);
   clearFailureReport();
 

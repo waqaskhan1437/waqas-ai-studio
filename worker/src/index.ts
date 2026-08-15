@@ -32,6 +32,7 @@ import { handleAiAccessRoutes } from "./routes/ai-access";
 import { handleWebhookRoutes } from "./routes/webhooks";
 import { handleYoutubeExtractRoutes } from "./routes/youtube-extract";
 import { handleOAuthRoutes } from "./routes/oauth";
+import { handleVideoGenerationRoutes, handleVideoGenerationSceneRoute } from "./routes/video-generation";
 import { formatDatabaseDate, markAutomationRunCompleted, processDueAutomations, processPendingUploads, syncStaleRunningJobs } from "./services/automation-scheduler";
 import { getAdminEmail, getAdminPassword, getAuthContext, issueAdminAccessToken, requireAuth, logApiRequest, findUserByAccessToken } from "./services/auth";
 import { verifyWorkflowRuntimeConfigToken } from "./services/github";
@@ -782,6 +783,11 @@ export default {
         automationConfig.postforme_api_key = postformeSettings.api_key;
       }
 
+      const aiSettings = await getScopedSettings<AISettings>(env.DB, "ai", job.user_id);
+      if (automationConfig.workflow === "video_generation" && aiSettings?.elevenlabs_api_key) {
+        automationConfig.elevenlabs_api_key = aiSettings.elevenlabs_api_key;
+      }
+
       // ── Live cookie override (CORE FIX) ──────────────────────────────────
       // Cookies are frozen into jobs.input_data at dispatch time. By the time the
       // runner picks up the job (often 30-60 min later, mid-way through a large
@@ -947,6 +953,44 @@ export default {
         requestSize
       );
     }
+
+     if (path === "/api/video-generation/scene") {
+       return handleVideoGenerationSceneRoute(request, env);
+     }
+
+     if (path.startsWith("/api/video-generation")) {
+       const authContext = await requireAuth(request, env);
+       if (authContext instanceof Response) {
+         const durationMs = Date.now() - startTime;
+         await logApiRequest(
+           env,
+           null,
+           null,
+           path,
+           method,
+           401,
+           ipAddress,
+           userAgent,
+           requestSize,
+           0,
+           durationMs,
+           "Unauthorized"
+         );
+         return authContext;
+       }
+
+       return handleRouteWithAuditLog(
+         env,
+         () => handleVideoGenerationRoutes(request, env, path, authContext),
+         authContext,
+         path,
+         method,
+         startTime,
+         ipAddress,
+         userAgent,
+         requestSize
+       );
+     }
 
      if (path.startsWith("/api/automations")) {
        const authContext = await requireAuth(request, env);

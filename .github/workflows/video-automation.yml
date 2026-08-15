@@ -38,7 +38,7 @@ permissions:
 jobs:
   process-video:
     runs-on: ${{ fromJson(github.event.inputs.runner_labels || '["ubuntu-latest"]') }}
-    timeout-minutes: 120
+    timeout-minutes: 360
 
     env:
       WORKER_WEBHOOK_URL: ${{ github.event.inputs.worker_webhook_url }}
@@ -108,7 +108,12 @@ jobs:
             fonts-dejavu-core \
             fonts-ubuntu \
             python3
+          mkdir -p /usr/share/fonts/truetype/noto
+          if [ -f runner-scripts/fonts/NotoNastaliqUrdu.ttf ]; then
+            cp runner-scripts/fonts/NotoNastaliqUrdu.ttf /usr/share/fonts/truetype/noto/NotoNastaliqUrdu.ttf
+          fi
           fc-cache -f -v >/dev/null 2>&1 || true
+          fc-match "Noto Nastaliq Urdu" || true
           ffmpeg -version | head -1
 
       - name: Install Playwright Chromium
@@ -149,7 +154,7 @@ jobs:
           fi
 
       - name: Download and Process Videos
-        timeout-minutes: 90
+        timeout-minutes: 330
         run: |
           cd runner-scripts
           mkdir -p output

@@ -1134,11 +1134,6 @@ export async function triggerAutomationRun(
     return { success: false, error: "Automation ID is required" };
   }
 
-  const userRecord = await env.DB.prepare(
-    "SELECT role FROM users WHERE id = ? LIMIT 1"
-  ).bind(userId).first<{ role: string | null }>();
-  const executionMode = userRecord?.role === "admin" ? "github" : "local";
-
   let config: Record<string, unknown>;
   try {
     config = parseAutomationConfig(automation.config);
@@ -1146,6 +1141,60 @@ export async function triggerAutomationRun(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Invalid automation config",
+    };
+  }
+
+  const userRecord = await env.DB.prepare(
+    "SELECT role FROM users WHERE id = ? LIMIT 1"
+  ).bind(userId).first<{ role: string | null }>();
+  const executionMode = readString(config.workflow) === "video_generation"
+    ? "github"
+    : (userRecord?.role === "admin" ? "github" : "local");
+
+  if (readString(config.workflow) === "video_generation") {
+    const githubSettings = await getScopedSettings<GithubSettings>(env.DB, "github", userId);
+    const jobResult = await env.DB.prepare(
+      "INSERT INTO jobs (user_id, automation_id, status, input_data, started_at) VALUES (?, ?, 'queued', ?, CURRENT_TIMESTAMP)"
+    ).bind(userId, automation.id, JSON.stringify(config)).run();
+    const jobId = Number(jobResult.meta.last_row_id);
+
+    if (!githubSettings) {
+      const error = "GitHub settings not configured. Go to Settings -> GitHub Runner";
+      await failExistingAutomationJob(env, jobId, error, "dispatch.github_settings", { execution_mode: executionMode });
+      return { success: false, jobId, executionMode, error };
+    }
+
+    const workflow = buildWorkflowDispatch(automation, jobId, config);
+    workflow.inputs.runtime_config_token = await buildWorkflowRuntimeConfigToken(jobId, githubSettings.pat_token);
+    workflow.inputs.runner_labels = serializeRunnerLabels(githubSettings.runner_labels);
+    const dispatchResult = await dispatchWorkflow(githubSettings, workflow.inputs, workflow.workflowName);
+
+    if (!dispatchResult.success) {
+      const error = dispatchResult.error || "Workflow dispatch failed";
+      await failExistingAutomationJob(env, jobId, error, "dispatch.github_api", {
+        workflow: workflow.workflowName,
+        dispatch_status: dispatchResult.dispatchStatus,
+        payload_bytes: dispatchResult.payloadBytes,
+        dispatch_nonce: dispatchResult.dispatchNonce,
+      });
+      return { success: false, jobId, executionMode, error };
+    }
+
+    await env.DB.prepare(
+      "UPDATE jobs SET status = 'running', github_run_id = ?, github_run_url = ?, logs = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+    ).bind(
+      dispatchResult.runId,
+      dispatchResult.runUrl,
+      dispatchResult.warning ? JSON.stringify([{ at: new Date().toISOString(), stage: "dispatch.run_lookup", level: "warning", message: dispatchResult.warning, dispatch_nonce: dispatchResult.dispatchNonce }]) : null,
+      jobId
+    ).run();
+
+    return {
+      success: true,
+      jobId,
+      githubRunId: dispatchResult.runId,
+      executionMode,
+      message: "AI video generation dispatched to the remote runner.",
     };
   }
 

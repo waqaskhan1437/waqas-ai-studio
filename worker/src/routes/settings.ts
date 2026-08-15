@@ -574,6 +574,7 @@ export async function handleSettingsRoutes(
         openrouter_key: body.openrouter_key || null,
         openai_key: body.openai_key || null,
         groq_key: body.groq_key || null,
+        elevenlabs_api_key: body.elevenlabs_api_key || null,
         default_provider: body.default_provider || "openai",
       });
       return jsonResponse({ success: true, message: "AI settings saved" });
@@ -646,6 +647,14 @@ export async function handleSettingsRoutes(
           });
           testResult = res.ok;
           message = await buildProviderTestMessage("Groq", res);
+          break;
+        }
+        case "elevenlabs": {
+          const res = await fetch("https://api.elevenlabs.io/v1/user", {
+            headers: { "xi-api-key": apiKey },
+          });
+          testResult = res.ok;
+          message = await buildProviderTestMessage("ElevenLabs", res);
           break;
         }
         default:

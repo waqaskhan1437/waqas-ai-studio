@@ -1,5 +1,8 @@
 export interface Env {
   DB: D1Database;
+  AI?: {
+    run(model: string, input: Record<string, unknown>): Promise<unknown>;
+  };
   ENVIRONMENT: string;
   FRONTEND_URL?: string;
   GEMINI_BRIDGE_URL?: string;
@@ -114,6 +117,7 @@ export interface AISettings {
   openrouter_key: string | null;
   openai_key: string | null;
   groq_key: string | null;
+  elevenlabs_api_key: string | null;
   default_provider: string;
   created_at?: string;
   updated_at?: string;

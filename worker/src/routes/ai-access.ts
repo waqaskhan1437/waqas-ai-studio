@@ -61,7 +61,7 @@ const PROJECT_NAME = "Automation System";
 const SAFE_SETTINGS_FIELDS: Record<string, Set<string>> = {
   github: new Set(["pat_token", "repo_owner", "repo_name", "runner_labels", "workflow_dispatch_url"]),
   postforme: new Set(["api_key", "platforms", "saved_accounts", "default_schedule"]),
-  ai: new Set(["gemini_key", "grok_key", "cohere_key", "openrouter_key", "openai_key", "groq_key", "default_provider"]),
+  ai: new Set(["gemini_key", "grok_key", "cohere_key", "openrouter_key", "openai_key", "groq_key", "elevenlabs_api_key", "default_provider"]),
   "video-sources": new Set(["bunny_api_key", "bunny_library_id", "youtube_cookies", "google_photos_cookies"]),
 };
 

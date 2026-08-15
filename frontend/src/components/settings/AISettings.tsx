@@ -8,6 +8,7 @@ export default function AISettings() {
   const [openrouterKey, setOpenrouterKey] = useState("");
   const [openaiKey, setOpenaiKey] = useState("");
   const [groqKey, setGroqKey] = useState("");
+  const [elevenLabsKey, setElevenLabsKey] = useState("");
   const [defaultProvider, setDefaultProvider] = useState("openai");
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
@@ -24,6 +25,7 @@ export default function AISettings() {
           setOpenrouterKey(data.data.openrouter_key || "");
           setOpenaiKey(data.data.openai_key || "");
           setGroqKey(data.data.groq_key || "");
+          setElevenLabsKey(data.data.elevenlabs_api_key || "");
           setDefaultProvider(data.data.default_provider || "openai");
         }
       })
@@ -55,6 +57,10 @@ export default function AISettings() {
     setTesting(null);
   };
 
+  const handleTestElevenLabs = async () => {
+    await handleTest("elevenlabs", elevenLabsKey);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -63,7 +69,7 @@ export default function AISettings() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           gemini_key: geminiKey, grok_key: grokKey, cohere_key: cohereKey,
-          openrouter_key: openrouterKey, openai_key: openaiKey, groq_key: groqKey, default_provider: defaultProvider,
+          openrouter_key: openrouterKey, openai_key: openaiKey, groq_key: groqKey, elevenlabs_api_key: elevenLabsKey, default_provider: defaultProvider,
         }),
       });
       alert("AI settings saved!");
@@ -76,6 +82,19 @@ export default function AISettings() {
       <h3 className="text-xl font-semibold mb-2">AI Provider Settings</h3>
       <p className="text-sm text-[#a1a1aa] mb-6">Configure API keys for AI services used in automation</p>
       <div className="space-y-4">
+        <div className="glass-card p-5 border border-cyan-400/15">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="font-medium text-sm">ElevenLabs Voice-over</p>
+              <p className="mt-1 text-xs text-[#a1a1aa]">AI Video Generator ke Urdu, Hindi aur multilingual narration ke liye.</p>
+            </div>
+            <button onClick={handleTestElevenLabs} disabled={testing !== null} className={`text-xs px-4 py-2 rounded-lg font-medium transition-all ${testResults.elevenlabs?.success === true ? "bg-[rgba(16,185,129,0.15)] text-[#10b981]" : testResults.elevenlabs?.success === false && testResults.elevenlabs?.message ? "bg-[rgba(239,68,68,0.15)] text-[#ef4444]" : "glass-button"}`}>
+              {testing === "elevenlabs" ? "Testing..." : testResults.elevenlabs?.success === true ? "Connected" : testResults.elevenlabs?.success === false && testResults.elevenlabs?.message ? "Failed" : "Test"}
+            </button>
+          </div>
+          <input type="password" className="glass-input text-sm w-full" placeholder="ElevenLabs API key" value={elevenLabsKey} onChange={(e) => setElevenLabsKey(e.target.value)} />
+          {testResults.elevenlabs?.message && <p className={`text-xs mt-2 ${testResults.elevenlabs.success ? "text-[#10b981]" : "text-[#ef4444]"}`}>{testResults.elevenlabs.message}</p>}
+        </div>
         {providers.map((provider) => (
           <div key={provider.id} className="glass-card p-5">
             <div className="flex items-center justify-between mb-3">

@@ -137,6 +137,7 @@ CREATE TABLE IF NOT EXISTS settings_ai (
   openrouter_key TEXT,
   openai_key TEXT,
   groq_key TEXT,
+  elevenlabs_api_key TEXT,
   default_provider TEXT DEFAULT 'openai',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

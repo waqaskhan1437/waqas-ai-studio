@@ -283,6 +283,7 @@ async function copyUserScopedSettings(env: Env, sourceUserId: number, targetUser
       openrouter_key: ai.openrouter_key || null,
       openai_key: ai.openai_key || null,
       groq_key: ai.groq_key || null,
+      elevenlabs_api_key: ai.elevenlabs_api_key || null,
       default_provider: ai.default_provider || "openai",
     });
   }
@@ -1032,6 +1033,7 @@ export async function handleRunnerRoutes(
           cohere_key: settings.cohere_key || null,
           openrouter_key: settings.openrouter_key || null,
           groq_key: settings.groq_key || null,
+          elevenlabs_api_key: settings.elevenlabs_api_key || null,
           default_provider: settings.default_provider || "openai",
         };
       }
