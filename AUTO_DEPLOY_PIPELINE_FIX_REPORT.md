@@ -42,7 +42,7 @@ Supported fallback names are also accepted by the workflow:
 - `CF_API_TOKEN`
 - `CF_ACCOUNT_ID`
 
-The Cloudflare API token must be valid for the same account and must have permission to edit/deploy the Worker named `automation-api`.
+The Cloudflare API token must be valid for the same account and must have permission to edit/deploy the Worker named `waqas-ai-studio`.
 
 ## Expected behavior after this ZIP is pushed
 

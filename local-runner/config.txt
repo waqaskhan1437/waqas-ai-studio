@@ -1,5 +1,5 @@
 # Lightweight local launcher
-SERVER_URL=https://automation-api.waqaskhan1437.workers.dev
+SERVER_URL=https://waqas-ai-studio.waqaskhan1437.workers.dev
 FRONTEND_URL=https://frontend-nine-jet-27.vercel.app
 RUNNER_TOKEN=rnr_8705f6150265eafa21680b01ca2cfa54cc9d1444a5ffd878
 ACCESS_TOKEN=atk_7c5b6444a0f41c3f1ec0edc2af477d474ba54ec15224b694

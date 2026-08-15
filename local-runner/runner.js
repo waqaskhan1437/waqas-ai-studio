@@ -9,7 +9,7 @@ const RUNNER_STATE_PATH = path.join(__dirname, 'runner-state.json');
 const FFMPEG_EXE = path.join(__dirname, 'tools', 'ffmpeg', 'bin', 'ffmpeg.exe');
 const YTDLP_EXE = path.join(__dirname, 'tools', 'yt-dlp', 'yt-dlp.exe');
 const UPDATE_MANIFEST_PATH = path.join(__dirname, 'update-manifest.json');
-const DEFAULT_UPDATE_MANIFEST_URL = 'https://raw.githubusercontent.com/waqaskhan1437/automation-system/master/local-runner/update-manifest.json';
+const DEFAULT_UPDATE_MANIFEST_URL = 'https://raw.githubusercontent.com/waqaskhan1437/waqas-ai-studio/master/local-runner/update-manifest.json';
 const RUNNER_SCRIPTS_DIR = [
   path.resolve(__dirname, '..', 'runner-scripts'),
   path.join(__dirname, 'runner-scripts'),
@@ -83,7 +83,7 @@ let config = {
   postformeApiKey: '',
   runnerToken: '',
   accessToken: '',
-  serverUrl: 'https://automation-api.waqaskhan1437.workers.dev'
+  serverUrl: 'https://waqas-ai-studio.waqaskhan1437.workers.dev'
 };
 
 // ============= STATE =============
@@ -481,7 +481,7 @@ function buildManifestRawBaseUrl(manifest) {
   }
 
   const owner = toNullableString(manifest?.repo_owner) || 'waqaskhan1437';
-  const repo = toNullableString(manifest?.repo_name) || 'automation-system';
+  const repo = toNullableString(manifest?.repo_name) || 'waqas-ai-studio';
   const branch = toNullableString(manifest?.branch) || 'master';
   return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}`;
 }

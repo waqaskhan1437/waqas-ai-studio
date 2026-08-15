@@ -74,7 +74,7 @@ GET    /api/ai/logs
 1. Fetch manifest:
 
 ```bash
-curl -H "Authorization: Bearer <API_KEY>" "https://automation-api.waqaskhan1437.workers.dev/api/ai/manifest"
+curl -H "Authorization: Bearer <API_KEY>" "https://waqas-ai-studio.waqaskhan1437.workers.dev/api/ai/manifest"
 ```
 
 2. Fetch project map and file tree.

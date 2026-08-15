@@ -2508,7 +2508,7 @@ export async function syncStaleRunningJobs(env: Env): Promise<void> {
 
       console.log(`[syncStaleRunningJobs] Job ${job.id} (run ${job.github_run_id}): GitHub=${runStatus.status}/${runStatus.conclusion} -> updating to ${newStatus}`);
 
-      const videoUrl = isSuccess ? `https://automation-api.waqaskhan1437.workers.dev/api/output/${job.id}` : null;
+      const videoUrl = isSuccess ? `https://waqas-ai-studio.waqaskhan1437.workers.dev/api/output/${job.id}` : null;
       const outputData = isSuccess ? JSON.stringify({ video_url: videoUrl, synced_from_github: true }) : null;
 
       await env.DB.prepare(

@@ -12,7 +12,7 @@ function Write-Step([string]$Message) {
 
 function Load-Config {
     $config = @{
-        SERVER_URL = "https://automation-api.waqaskhan1437.workers.dev"
+        SERVER_URL = "https://waqas-ai-studio.waqaskhan1437.workers.dev"
         RUNNER_TOKEN = ""
         ACCESS_TOKEN = ""
     }

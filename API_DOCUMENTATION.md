@@ -5,7 +5,7 @@ This API allows external systems (Google Scripts, Postman, Zapier, etc.) to inte
 
 ## Base URL
 ```
-https://automation-api.waqaskhan1437.workers.dev
+https://waqas-ai-studio.waqaskhan1437.workers.dev
 ```
 
 ## Authentication
@@ -268,13 +268,13 @@ Logs are retained for 90 days.
 ### Zapier Example
 1. Create API key with `full` permissions
 2. Use Webhook by Zapier action
-3. Set URL to `https://automation-api.waqaskhan1437.workers.dev/api/webhook/your_webhook_id/trigger`
+3. Set URL to `https://waqas-ai-studio.waqaskhan1437.workers.dev/api/webhook/your_webhook_id/trigger`
 4. Add your API key in headers
 
 ### Google Apps Script Example
 ```javascript
 function triggerAutomation(webhookId, apiKey) {
-  const url = `https://automation-api.waqaskhan1437.workers.dev/api/webhook/${webhookId}/trigger`;
+  const url = `https://waqas-ai-studio.waqaskhan1437.workers.dev/api/webhook/${webhookId}/trigger`;
   
   const options = {
     method: 'post',

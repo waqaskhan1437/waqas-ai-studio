@@ -2,10 +2,10 @@
  * ============================================================================
  * AUTOMATION SYSTEM - Cloudflare Worker API
  * ============================================================================
- * Project: automation-system
- * GitHub: https://github.com/waqaskhan1437/automation-system
- * Cloudflare Worker: automation-api
- * URL: https://automation-api.waqaskhan1437.workers.dev
+ * Project: waqas-ai-studio
+ * GitHub: https://github.com/waqaskhan1437/waqas-ai-studio
+ * Cloudflare Worker: waqas-ai-studio
+ * URL: https://waqas-ai-studio.waqaskhan1437.workers.dev
  * 
  * This worker provides the backend API for:
  * - Automation management (CRUD)

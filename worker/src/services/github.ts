@@ -3,7 +3,7 @@ import { githubHeaders, sleep } from "../utils";
 
 const WORKFLOW_NAME = "video-automation.yml";
 const GITHUB_FETCH_TIMEOUT_MS = 15000;
-const WORKER_WEBHOOK_URL = "https://automation-api.waqaskhan1437.workers.dev/api/webhook/github";
+const WORKER_WEBHOOK_URL = "https://waqas-ai-studio.waqaskhan1437.workers.dev/api/webhook/github";
 const RUNTIME_CONFIG_TOKEN_TTL_MS = 2 * 60 * 60 * 1000;
 export interface DispatchResult {
   success: boolean;

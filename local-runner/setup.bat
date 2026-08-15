@@ -158,7 +158,7 @@ echo [6/9] Checking Configuration...
 if not exist "config.txt" (
     (
         echo # Lightweight local launcher
-        echo SERVER_URL=https://automation-api.waqaskhan1437.workers.dev
+        echo SERVER_URL=https://waqas-ai-studio.waqaskhan1437.workers.dev
         echo FRONTEND_URL=https://frontend-nine-jet-27.vercel.app
         echo RUNNER_TOKEN=
         echo ACCESS_TOKEN=

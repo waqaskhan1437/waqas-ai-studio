@@ -14,7 +14,7 @@ export default function DataDeletionPage() {
       <p>Processing may take up to 30 days from confirmation.</p>
       <h2>Contact</h2>
       <p>Email: waqaskhan1437@example.com</p>
-      <p>GitHub: github.com/waqaskhan1437/automation-system</p>
+      <p>GitHub: github.com/waqaskhan1437/waqas-ai-studio</p>
     </main>
   );
 }

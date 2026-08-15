@@ -1290,7 +1290,7 @@ export async function generateAiJson(
         model,
         messages,
         {
-          "HTTP-Referer": "https://automation-frontend-woad.vercel.app",
+          "HTTP-Referer": "https://frontend-nine-jet-27.vercel.app",
           "X-Title": "Automation Frontend",
         }
       );

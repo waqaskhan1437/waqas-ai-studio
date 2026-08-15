@@ -906,8 +906,8 @@ export default function AutomationsPage() {
                       <div key={idx} className="flex items-center justify-between text-xs">
                         <span className="text-[#a1a1aa] truncate mr-2">{artifact.name}</span>
                         <div className="flex items-center gap-2 shrink-0">
-                          {artifact.size_in_bytes > 0 && (
-                            <span className="text-[#71717a]">{(artifact.size_in_bytes / 1024 / 1024).toFixed(1)} MB</span>
+                          {(artifact.size_in_bytes ?? 0) > 0 && (
+                            <span className="text-[#71717a]">{((artifact.size_in_bytes ?? 0) / 1024 / 1024).toFixed(1)} MB</span>
                           )}
                           {artifact.archive_download_url && (
                             <a href={artifact.archive_download_url} target="_blank" rel="noopener" className="text-emerald-300 hover:text-emerald-200 underline">

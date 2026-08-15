@@ -10,10 +10,10 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
 $DefaultRepoOwner = "waqaskhan1437"
-$DefaultRepoName = "automation-system"
+$DefaultRepoName = "waqas-ai-studio"
 $DefaultBranch = "master"
-$DefaultManifestUrl = "https://raw.githubusercontent.com/waqaskhan1437/automation-system/master/local-runner/update-manifest.json"
-$DefaultServerUrl = "https://automation-api.waqaskhan1437.workers.dev"
+$DefaultManifestUrl = "https://raw.githubusercontent.com/waqaskhan1437/waqas-ai-studio/master/local-runner/update-manifest.json"
+$DefaultServerUrl = "https://waqas-ai-studio.waqaskhan1437.workers.dev"
 $DefaultFrontendUrl = "https://frontend-nine-jet-27.vercel.app"
 $ConfigFileName = "config.txt"
 $NoCacheHeaders = @{

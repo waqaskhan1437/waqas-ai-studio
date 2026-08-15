@@ -2,7 +2,7 @@
 
 This repository now uses **one production deployment workflow** for pushes to `master` or `main`:
 
-1. **Deploy Worker** - installs `worker`, runs `npm run check`, then deploys `automation-api` with Wrangler.
+1. **Deploy Worker** - installs `worker`, runs `npm run check`, then deploys `waqas-ai-studio` with Wrangler.
 2. **Deploy Frontend** - starts only after the Worker deploy succeeds, installs `frontend`, runs `npm run check`, builds Vercel output, then deploys the `frontend` project to Vercel production.
 
 This keeps production deployment ordered as:
@@ -60,6 +60,6 @@ The repo disables Vercel Git auto-deploys in both `vercel.json` files with:
 
 That prevents normal Vercel Git deployments from running on every commit while still allowing the GitHub Action to deploy with Vercel CLI.
 
-Cloudflare's Git integration cannot be fully disabled from this repo. In Cloudflare Dashboard, disconnect or disable Workers Builds/Git integration for `automation-api` if it is connected to the same GitHub repo. Otherwise Cloudflare can deploy directly on push at the same time as GitHub Actions, creating duplicate Worker deployments.
+Cloudflare's Git integration cannot be fully disabled from this repo. In Cloudflare Dashboard, disconnect or disable Workers Builds/Git integration for `waqas-ai-studio` if it is connected to the same GitHub repo. Otherwise Cloudflare can deploy directly on push at the same time as GitHub Actions, creating duplicate Worker deployments.
 
-If an old Vercel project such as `automation-system-master` is still connected to this repo, delete it or disconnect its Git integration. Keeping only the `frontend` Vercel project avoids extra skipped/canceled Vercel checks.
+If an old Vercel project such as `waqas-ai-studio` is still connected to this repo, delete it or disconnect its Git integration. Keeping only the `frontend` Vercel project avoids extra skipped/canceled Vercel checks.

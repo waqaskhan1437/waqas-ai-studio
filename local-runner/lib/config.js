@@ -4,7 +4,7 @@ const path = require("path");
 const CONFIG_PATH = path.join(__dirname, "..", "config.txt");
 
 const DEFAULTS = {
-  SERVER_URL: "https://automation-api.waqaskhan1437.workers.dev",
+  SERVER_URL: "https://waqas-ai-studio.waqaskhan1437.workers.dev",
   FRONTEND_URL: "https://frontend-nine-jet-27.vercel.app",
   RUNNER_TOKEN: "",
   ACCESS_TOKEN: "",

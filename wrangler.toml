@@ -1,6 +1,6 @@
 # Fallback Cloudflare config for repo-root Workers Builds.
 # Keep this aligned with worker/wrangler.toml.
-name = "automation-api"
+name = "waqas-ai-studio"
 main = "worker/src/index.ts"
 compatibility_date = "2024-12-05"
 compatibility_flags = ["nodejs_compat"]

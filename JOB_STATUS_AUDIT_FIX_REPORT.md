@@ -99,7 +99,7 @@ Changes:
 Replace `<TOKEN>` with a new/rotated AI API key.
 
 ```bash
-BASE="https://automation-api.waqaskhan1437.workers.dev"
+BASE="https://waqas-ai-studio.waqaskhan1437.workers.dev"
 TOKEN="<TOKEN>"
 
 curl -sS "$BASE/api/ai/monitor?ai_token=$TOKEN" | jq

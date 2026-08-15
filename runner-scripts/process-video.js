@@ -2,8 +2,8 @@
  * ============================================================================
  * AUTOMATION SYSTEM - Video Processing Script
  * ============================================================================
- * Project: automation-system
- * GitHub: https://github.com/waqaskhan1437/automation-system
+ * Project: waqas-ai-studio
+ * GitHub: https://github.com/waqaskhan1437/waqas-ai-studio
  * GitHub Actions: Video Processing Runner
  * 
  * This script processes videos for automation with features:

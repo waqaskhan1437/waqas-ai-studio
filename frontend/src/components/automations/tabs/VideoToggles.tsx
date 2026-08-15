@@ -2,8 +2,8 @@
  * ============================================================================
  * AUTOMATION SYSTEM - Video Toggles Component
  * ============================================================================
- * Project: automation-system
- * GitHub: https://github.com/waqaskhan1437/automation-system
+ * Project: waqas-ai-studio
+ * GitHub: https://github.com/waqaskhan1437/waqas-ai-studio
  * Vercel: frontend (prj_BVtIbisfUzhsuaE0iTzokA952icO)
  * 
  * This component contains the advanced audio mute feature with multiple modes:

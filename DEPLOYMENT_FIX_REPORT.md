@@ -69,7 +69,7 @@ To remove duplicate Cloudflare deploy attempts completely:
 
 1. Go to Cloudflare dashboard.
 2. Open Workers & Pages.
-3. Open Worker `automation-api`.
+3. Open Worker `waqas-ai-studio`.
 4. Open Settings / Builds.
 5. Disconnect or disable the Git repository auto-deploy/Workers Builds integration.
 

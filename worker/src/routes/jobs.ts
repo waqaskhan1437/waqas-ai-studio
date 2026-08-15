@@ -697,7 +697,7 @@ export async function handleJobsRoutes(
                 Authorization: `Bearer ${githubSettings.pat_token}`,
                 Accept: "application/vnd.github.v3+json",
                 "Content-Type": "application/json",
-                "User-Agent": "automation-worker",
+                "User-Agent": "waqas-ai-studio",
               },
             }
           );

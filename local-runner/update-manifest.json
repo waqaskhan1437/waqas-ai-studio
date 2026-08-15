@@ -1,9 +1,9 @@
 {
   "version": "2026.04.29.4",
   "repo_owner": "waqaskhan1437",
-  "repo_name": "automation-system",
+  "repo_name": "waqas-ai-studio",
   "branch": "master",
-  "remote_manifest_url": "https://raw.githubusercontent.com/waqaskhan1437/automation-system/master/local-runner/update-manifest.json",
+  "remote_manifest_url": "https://raw.githubusercontent.com/waqaskhan1437/waqas-ai-studio/master/local-runner/update-manifest.json",
   "install_runner_scripts_dependencies": true,
   "restart_after_sync": true,
   "files": [

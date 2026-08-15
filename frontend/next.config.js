@@ -5,7 +5,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://automation-api.waqaskhan1437.workers.dev/api/:path*",
+        destination: "https://waqas-ai-studio.waqaskhan1437.workers.dev/api/:path*",
       },
     ];
   },

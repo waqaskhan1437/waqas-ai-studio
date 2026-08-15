@@ -28,7 +28,7 @@ function getBridgeSecret(): string {
 }
 
 function getWorkerApiBaseUrl(): string {
-  return String(process.env.NEXT_PUBLIC_API_URL || "https://automation-api.waqaskhan1437.workers.dev").trim().replace(/\/+$/, "");
+  return String(process.env.NEXT_PUBLIC_API_URL || "https://waqas-ai-studio.waqaskhan1437.workers.dev").trim().replace(/\/+$/, "");
 }
 
 function getBearerToken(request: NextRequest): string {

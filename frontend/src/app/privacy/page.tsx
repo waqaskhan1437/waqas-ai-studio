@@ -15,7 +15,7 @@ export default function PrivacyPage() {
       <h2>Data Storage</h2>
       <p>All data is stored in Cloudflare D1 database (Asia-Pacific region). OAuth tokens are encrypted at rest.</p>
       <h2>Contact</h2>
-      <p>For questions, reach out via the repository: github.com/waqaskhan1437/automation-system</p>
+      <p>For questions, reach out via the repository: github.com/waqaskhan1437/waqas-ai-studio</p>
     </main>
   );
 }
